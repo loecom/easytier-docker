@@ -18,8 +18,10 @@ RUN mkdir -p /tmp/output; \
 
 FROM ubuntu:latest
 
+ARG ROOT_PASSWORD
+
 RUN apt update && apt install -y --no-install-recommends tzdata tini openssh-server && ssh-keygen -A && mkdir -p /run/sshd
-RUN echo "root:gmajvfhp2323" | chpasswd \
+RUN echo "root:${ROOT_PASSWORD}" | chpasswd \
     && sed -i 's/#PermitRootLogin prohibit-password/PermitRootLogin yes/' /etc/ssh/sshd_config \
     && sed -i 's/#PasswordAuthentication yes/PasswordAuthentication yes/' /etc/ssh/sshd_config
 WORKDIR /app
