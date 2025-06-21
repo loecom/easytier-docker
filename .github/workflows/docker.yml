@@ -66,4 +66,4 @@ jobs:
           push: true
           file: .github/workflows/Dockerfile
           tags: |
-            ghcr.io/loecom/easytier:${{ inputs.image_tag }}${{ inputs.mark_latest && ',ghcr.io/loecom/easytier:latest' || '' }},
+            ghcr.io/loecom/easytier:${{ inputs.image_tag }}${{ inputs.mark_latest && ',ghcr.io/loecom/easytier:latest' || '' }}
