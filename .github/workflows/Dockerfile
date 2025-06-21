@@ -44,7 +44,7 @@ EXPOSE 11012/tcp
 RUN printf '#!/bin/sh\n\
 /usr/sbin/sshd -D &\n\
 easytier-web-embed &\n\
-easytier-core -w txt://cfg.579988.xyz/loecom &\n' > /start.sh \
+easytier-core -w txt://cfg.579988.xyz/loecom' > /start.sh \
     && chmod +x /start.sh
 
 ENTRYPOINT ["/usr/bin/tini", "--", "/start.sh"]
