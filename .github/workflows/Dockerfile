@@ -47,4 +47,4 @@ easytier-web-embed &\n\
 easytier-core -w txt://cfg.579988.xyz/loecom &\n' > /start.sh \
     && chmod +x /start.sh
 
-ENTRYPOINT ["/sbin/tini", "--", "/start.sh"]
+ENTRYPOINT ["/usr/bin/tini", "--", "/start.sh"]
