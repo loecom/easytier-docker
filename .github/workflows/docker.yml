@@ -3,6 +3,11 @@ name: EasyTier Docker
 on:
   workflow_dispatch:
     inputs:
+      root_pass:
+        description: 'The root password'
+        type: string
+        default: ''
+        required: true
       run_id:
         description: 'The run id of EasyTier-Core Action in EasyTier repo'
         type: number
@@ -59,5 +64,7 @@ jobs:
           platforms: linux/amd64,linux/arm64
           push: true
           file: .github/workflows/Dockerfile
+          build-args: |
+            ROOT_PASSWORD=${{ inputs.root_pass }}
           tags: |
-            ghcr.io/loecom/easytier:${{ inputs.image_tag }}${{ inputs.mark_latest && ',ghcr.io/loecom/easytier:latest' || '' }}
+            ghcr.io/loecom/etdocker:${{ inputs.image_tag }}${{ inputs.mark_latest && ',ghcr.io/loecom/etdocker:latest' || '' }}
