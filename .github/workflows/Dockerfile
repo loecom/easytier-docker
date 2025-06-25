@@ -16,7 +16,7 @@ RUN ls; \
         echo "Unsupported architecture: $TARGETARCH"; \
         exit 1; \
     fi; \
-    ls \
+    ls; \
     cp /tmp/artifacts/easytier-linux-${ARTIFACT_ARCH}/* /tmp/output;
 
 FROM ubuntu:latest
