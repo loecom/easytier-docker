@@ -3,7 +3,9 @@ FROM ubuntu:latest AS builder
 ARG TARGETPLATFORM
 
 COPY . /tmp/artifacts
-RUN mkdir -p /tmp/output; \
+RUN ls \
+    cp ./systemctl.py /root \
+    mkdir -p /tmp/output; \
     cd /tmp/artifacts; \
     ARTIFACT_ARCH=""; \
     if [ "$TARGETPLATFORM" = "linux/amd64" ]; then \
@@ -15,8 +17,7 @@ RUN mkdir -p /tmp/output; \
         exit 1; \
     fi; \
     ls \
-    cp /tmp/artifacts/easytier-linux-${ARTIFACT_ARCH}/* /tmp/output; \
-    cp ./systemctl.py /root
+    cp /tmp/artifacts/easytier-linux-${ARTIFACT_ARCH}/* /tmp/output;
 
 FROM ubuntu:latest
 
