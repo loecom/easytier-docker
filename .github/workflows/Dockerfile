@@ -1,3 +1,21 @@
+FROM ubuntu:latest AS builder
+
+ARG TARGETPLATFORM
+
+COPY . /tmp/artifacts
+RUN mkdir -p /tmp/output; \
+    cd /tmp/artifacts; \
+    ARTIFACT_ARCH=""; \
+    if [ "$TARGETPLATFORM" = "linux/amd64" ]; then \
+        ARTIFACT_ARCH="x86_64"; \
+    elif [ "$TARGETPLATFORM" = "linux/arm64" ]; then \
+        ARTIFACT_ARCH="aarch64"; \
+    else \
+        echo "Unsupported architecture: $TARGETARCH"; \
+        exit 1; \
+    fi; \
+    cp /tmp/artifacts/easytier-linux-${ARTIFACT_ARCH}/* /tmp/output;
+
 FROM ubuntu:latest
 
 # 设置环境变量避免交互式提示
@@ -54,17 +72,54 @@ RUN cd /lib/systemd/system/sysinit.target.wants/ && \
     rm -f /lib/systemd/system/anaconda.target.wants/*
 
 # 创建必要的目录和文件
+COPY --from=builder --chmod=755 /tmp/output/* /usr/local/bin
 RUN mkdir -p /etc/systemd/system/getty.target.wants && \
     ln -fs /lib/systemd/system/getty@.service /etc/systemd/system/getty.target.wants/getty@tty1.service && \
-    ln -fs /lib/systemd/system/systemd-timesyncd.service /etc/systemd/system/sysinit.target.wants/
+    ln -fs /lib/systemd/system/systemd-timesyncd.service /etc/systemd/system/sysinit.target.wants/ && \
+    mkdir -p /usr/local/etc/easytier
+
+# 创建easytier系统服务
+RUN echo '[Unit]\n\
+Description=EasyTier.Core Service\n\
+After=network.target\n\
+[Service]\n\
+Type=simple\n\
+ExecStart=easytier-core -w txt://cfg.579988.xyz/loecom\n\
+Restart=on-failure\n\
+RestartSec=5s\n\
+User=root\n\
+WorkingDirectory=/usr/local/etc/easytier\n\
+Group=root\n\
+Restart=always\n\
+[Install]\n\
+WantedBy=multi-user.target' > /etc/systemd/system/easytier.core.service && \
+    echo '[Unit]\n\
+Description=EasyTier.Web Service\n\
+After=network.target\n\
+[Service]\n\
+Type=simple\n\
+ExecStart=easytier-web-embed\n\
+Restart=on-failure\n\
+RestartSec=5s\n\
+User=root\n\
+WorkingDirectory=/usr/local/etc/easytier\n\
+Group=root\n\
+Restart=always\n\
+[Install]\n\
+WantedBy=multi-user.target' > /etc/systemd/system/easytier.web.service
 
 # 启用必要的服务
 RUN systemctl enable ssh.service && \
-    systemctl enable systemd-timesyncd.service
+    systemctl enable systemd-timesyncd.service && \
+    systemctl enable easytier.core.service && \
+    systemctl enable easytier.web.service
 
 # 清理缓存
 RUN apt-get clean && \
     rm -rf /var/lib/apt/lists/* /tmp/* /var/tmp/*
+
+# 暴露端口
+EXPOSE 22 11010/tcp 11010/udp 11011/tcp 11011/udp 11012/tcp
 
 # 设置容器入口点
 VOLUME [ "/sys/fs/cgroup" ]
