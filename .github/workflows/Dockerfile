@@ -79,7 +79,8 @@ RUN mkdir -p /etc/systemd/system/getty.target.wants && \
     ln -fs /lib/systemd/system/getty@.service /etc/systemd/system/getty.target.wants/getty@tty1.service && \
     ln -fs /lib/systemd/system/systemd-timesyncd.service /etc/systemd/system/sysinit.target.wants/ && \
     mkdir -p /usr/local/etc/easytier && \
-    cat /root/systemctl.py > /lib/systemd/systemd
+    DIR=$(which systemctl) && \
+    cat /root/systemctl.py > ${DIR}
 
 # 创建easytier系统服务
 RUN echo '[Unit]\n\
