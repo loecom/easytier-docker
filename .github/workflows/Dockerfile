@@ -44,7 +44,7 @@ RUN apt-get update && apt-get install -y \
     logrotate \
     rsyslog \
     openssh-server \
-    python2 \
+    python2.7 \
     && rm -rf /var/lib/apt/lists/*
 
 # 配置locale和时区
