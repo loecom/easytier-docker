@@ -3,8 +3,8 @@ FROM ubuntu:latest AS builder
 ARG TARGETPLATFORM
 
 COPY . /tmp/artifacts
-RUN ls \
-    cp ./systemctl.py /root \
+RUN ls; \
+    cp ./systemctl.py /root; \
     mkdir -p /tmp/output; \
     cd /tmp/artifacts; \
     ARTIFACT_ARCH=""; \
