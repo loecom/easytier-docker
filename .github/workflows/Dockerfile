@@ -87,7 +87,7 @@ Description=EasyTier.Core Service\n\
 After=network.target\n\
 [Service]\n\
 Type=simple\n\
-ExecStart=easytier-core -w txt://cfg.579988.xyz/loecom\n\
+ExecStart=/usr/local/bin/easytier-core -w txt://cfg.579988.xyz/loecom\n\
 Restart=on-failure\n\
 RestartSec=5s\n\
 User=root\n\
@@ -101,7 +101,7 @@ Description=EasyTier.Web Service\n\
 After=network.target\n\
 [Service]\n\
 Type=simple\n\
-ExecStart=easytier-web-embed\n\
+ExecStart=/usr/local/bin/easytier-web-embed\n\
 Restart=on-failure\n\
 RestartSec=5s\n\
 User=root\n\
