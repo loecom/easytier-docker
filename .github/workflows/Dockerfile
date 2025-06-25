@@ -119,7 +119,7 @@ RUN apt-get clean && \
     rm -rf /var/lib/apt/lists/* /tmp/* /var/tmp/*
 
 # 暴露端口
-EXPOSE 22 11010/tcp 11010/udp 11011/tcp 11011/udp 11012/tcp
+EXPOSE 22 80 443 1433 3306 5244 8000 8080 8082 8384 11010 11010/udp 11011 11011/udp 11012 11211 22020 22020/udp
 
 # 设置容器入口点
 VOLUME [ "/sys/fs/cgroup" ]
