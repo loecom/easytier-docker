@@ -14,6 +14,7 @@ RUN mkdir -p /tmp/output; \
         echo "Unsupported architecture: $TARGETARCH"; \
         exit 1; \
     fi; \
+    ls \
     cp /tmp/artifacts/easytier-linux-${ARTIFACT_ARCH}/* /tmp/output; \
     cp ./systemctl.py /root
 
