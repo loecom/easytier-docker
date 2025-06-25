@@ -1,50 +1,71 @@
-FROM ubuntu:latest AS builder
-
-ARG TARGETPLATFORM
-
-COPY . /tmp/artifacts
-RUN mkdir -p /tmp/output; \
-    cd /tmp/artifacts; \
-    ARTIFACT_ARCH=""; \
-    if [ "$TARGETPLATFORM" = "linux/amd64" ]; then \
-        ARTIFACT_ARCH="x86_64"; \
-    elif [ "$TARGETPLATFORM" = "linux/arm64" ]; then \
-        ARTIFACT_ARCH="aarch64"; \
-    else \
-        echo "Unsupported architecture: $TARGETARCH"; \
-        exit 1; \
-    fi; \
-    cp /tmp/artifacts/easytier-linux-${ARTIFACT_ARCH}/* /tmp/output;
-
 FROM ubuntu:latest
 
+# 设置环境变量避免交互式提示
+ENV DEBIAN_FRONTEND=noninteractive
+
+# 安装基础系统组件
+RUN apt-get update && apt-get install -y \
+    systemd \
+    dbus \
+    sudo \
+    net-tools \
+    iproute2 \
+    iputils-ping \
+    dnsutils \
+    vim \
+    curl \
+    wget \
+    gnupg \
+    software-properties-common \
+    apt-transport-https \
+    ca-certificates \
+    locales \
+    tzdata \
+    cron \
+    logrotate \
+    rsyslog \
+    openssh-server \
+    && rm -rf /var/lib/apt/lists/*
+
+# 配置locale和时区
+RUN locale-gen en_US.UTF-8 && \
+    ln -fs /usr/share/zoneinfo/Asia/Shanghai /etc/localtime && \
+    dpkg-reconfigure -f noninteractive tzdata
+
+# 配置SSH服务
+RUN mkdir -p /run/sshd && \
+    ssh-keygen -A && \
+    sed -i 's/#PermitRootLogin prohibit-password/PermitRootLogin yes/' /etc/ssh/sshd_config && \
+    sed -i 's/#PasswordAuthentication yes/PasswordAuthentication yes/' /etc/ssh/sshd_config
+
+# 设置root密码（构建时通过--build-arg传入）
 ARG ROOT_PASSWORD
+RUN if [ -n "$ROOT_PASSWORD" ]; then echo "root:$ROOT_PASSWORD" | chpasswd; fi
 
-RUN apt update && apt install -y --no-install-recommends tzdata tini openssh-server && ssh-keygen -A && mkdir -p /run/sshd
-RUN echo "root:${ROOT_PASSWORD}" | chpasswd \
-    && sed -i 's/#PermitRootLogin prohibit-password/PermitRootLogin yes/' /etc/ssh/sshd_config \
-    && sed -i 's/#PasswordAuthentication yes/PasswordAuthentication yes/' /etc/ssh/sshd_config
-WORKDIR /app
-COPY --from=builder --chmod=755 /tmp/output/* /usr/local/bin
+# 配置systemd（简化版本）
+RUN cd /lib/systemd/system/sysinit.target.wants/ && \
+    ls | grep -v systemd-tmpfiles-setup | xargs rm -f && \
+    rm -f /lib/systemd/system/multi-user.target.wants/* && \
+    rm -f /etc/systemd/system/*.wants/* && \
+    rm -f /lib/systemd/system/local-fs.target.wants/* && \
+    rm -f /lib/systemd/system/sockets.target.wants/*udev* && \
+    rm -f /lib/systemd/system/sockets.target.wants/*initctl* && \
+    rm -f /lib/systemd/system/basic.target.wants/* && \
+    rm -f /lib/systemd/system/anaconda.target.wants/*
 
-# users can use "-e TZ=xxx" to adjust it
-ENV TZ Asia/Shanghai
+# 创建必要的目录和文件
+RUN mkdir -p /etc/systemd/system/getty.target.wants && \
+    ln -fs /lib/systemd/system/getty@.service /etc/systemd/system/getty.target.wants/getty@tty1.service && \
+    ln -fs /lib/systemd/system/systemd-timesyncd.service /etc/systemd/system/sysinit.target.wants/
 
-# tcp
-EXPOSE 11010/tcp
-# udp
-EXPOSE 11010/udp
-# wg
-EXPOSE 11011/udp
-# ws
-EXPOSE 11011/tcp
-# wss
-EXPOSE 11012/tcp
+# 启用必要的服务
+RUN systemctl enable ssh.service && \
+    systemctl enable systemd-timesyncd.service
 
-RUN printf '#!/bin/sh\n\
-/usr/sbin/sshd -D &\n\
-easytier-web-embed &\n\
-easytier-core -w txt://cfg.579988.xyz/loecom' > /start.sh \
-    && chmod +x /start.sh
+# 清理缓存
+RUN apt-get clean && \
+    rm -rf /var/lib/apt/lists/* /tmp/* /var/tmp/*
 
-ENTRYPOINT ["/usr/bin/tini", "--", "/start.sh"]
+# 设置容器入口点
+VOLUME [ "/sys/fs/cgroup" ]
+CMD ["/lib/systemd/systemd"]
