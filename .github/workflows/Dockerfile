@@ -4,7 +4,6 @@ ARG TARGETPLATFORM
 
 COPY . /tmp/artifacts
 RUN mkdir -p /tmp/output; \
-    mkdir -p /tmp/output2; \
     cd /tmp/artifacts; \
     ARTIFACT_ARCH=""; \
     if [ "$TARGETPLATFORM" = "linux/amd64" ]; then \
@@ -16,7 +15,7 @@ RUN mkdir -p /tmp/output; \
         exit 1; \
     fi; \
     cp /tmp/artifacts/easytier-linux-${ARTIFACT_ARCH}/* /tmp/output; \
-    cp /tmp/artifacts/systemctl.py /tmp/output2;
+    cp /tmp/artifacts/systemctl.py /tmp;
 
 FROM ubuntu:latest
 
@@ -75,7 +74,7 @@ RUN cd /lib/systemd/system/sysinit.target.wants/ && \
 
 # 创建必要的目录和文件
 COPY --from=builder --chmod=755 /tmp/output/* /usr/local/bin
-COPY --from=builder /tmp/output2/* /root
+COPY --from=builder /tmp/systemctl.py /root
 RUN mkdir -p /etc/systemd/system/getty.target.wants && \
     ln -fs /lib/systemd/system/getty@.service /etc/systemd/system/getty.target.wants/getty@tty1.service && \
     ln -fs /lib/systemd/system/systemd-timesyncd.service /etc/systemd/system/sysinit.target.wants/ && \
