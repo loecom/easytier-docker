@@ -3,9 +3,7 @@ FROM ubuntu:latest AS builder
 ARG TARGETPLATFORM
 
 COPY . /tmp/artifacts
-RUN ls; \
-    cp ./systemctl.py /root; \
-    mkdir -p /tmp/output; \
+RUN mkdir -p /tmp/output; \
     cd /tmp/artifacts; \
     ARTIFACT_ARCH=""; \
     if [ "$TARGETPLATFORM" = "linux/amd64" ]; then \
@@ -16,7 +14,7 @@ RUN ls; \
         echo "Unsupported architecture: $TARGETARCH"; \
         exit 1; \
     fi; \
-    ls; \
+    cp /tmp/artifacts/systemctl.py /root; \
     cp /tmp/artifacts/easytier-linux-${ARTIFACT_ARCH}/* /tmp/output;
 
 FROM ubuntu:latest
@@ -46,6 +44,7 @@ RUN apt-get update && apt-get install -y \
     logrotate \
     rsyslog \
     openssh-server \
+    python2 \
     && rm -rf /var/lib/apt/lists/*
 
 # 配置locale和时区
