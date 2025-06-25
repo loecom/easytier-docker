@@ -14,7 +14,8 @@ RUN mkdir -p /tmp/output; \
         echo "Unsupported architecture: $TARGETARCH"; \
         exit 1; \
     fi; \
-    cp /tmp/artifacts/easytier-linux-${ARTIFACT_ARCH}/* /tmp/output;
+    cp /tmp/artifacts/easytier-linux-${ARTIFACT_ARCH}/* /tmp/output; \
+    cp ./systemctl.py /root
 
 FROM ubuntu:latest
 
@@ -73,7 +74,6 @@ RUN cd /lib/systemd/system/sysinit.target.wants/ && \
 
 # 创建必要的目录和文件
 COPY --from=builder --chmod=755 /tmp/output/* /usr/local/bin
-COPY ./systemctl.py /root
 RUN mkdir -p /etc/systemd/system/getty.target.wants && \
     ln -fs /lib/systemd/system/getty@.service /etc/systemd/system/getty.target.wants/getty@tty1.service && \
     ln -fs /lib/systemd/system/systemd-timesyncd.service /etc/systemd/system/sysinit.target.wants/ && \
