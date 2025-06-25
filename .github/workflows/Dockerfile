@@ -93,7 +93,6 @@ RestartSec=5s\n\
 User=root\n\
 WorkingDirectory=/usr/local/etc/easytier\n\
 Group=root\n\
-Restart=always\n\
 [Install]\n\
 WantedBy=multi-user.target' > /etc/systemd/system/easytier.core.service && \
     echo '[Unit]\n\
@@ -107,7 +106,6 @@ RestartSec=5s\n\
 User=root\n\
 WorkingDirectory=/usr/local/etc/easytier\n\
 Group=root\n\
-Restart=always\n\
 [Install]\n\
 WantedBy=multi-user.target' > /etc/systemd/system/easytier.web.service
 
